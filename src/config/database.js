@@ -5,6 +5,14 @@ const env = require('./env');
 let sequelize;
 
 if (env.databaseUrl) {
+  // Sequelize charge le dialecte Postgres via un require() dynamique et construit
+  // au runtime (nom de module calculé à partir de `dialect`), que le file-tracer de
+  // Vercel (@vercel/nft) ne détecte pas toujours à l'analyse statique — le package
+  // `pg` se retrouvait alors absent du bundle déployé ("Please install pg package
+  // manually" au démarrage). Un require() statique et explicite ici force son inclusion.
+  require('pg');
+  require('pg-hstore');
+
   // Production (Vercel + Postgres serverless : Vercel Postgres, Neon, Supabase...).
   // Ces fournisseurs exigent SSL et n'exposent pas toujours un certificat vérifiable
   // depuis l'environnement de la fonction serverless, d'où rejectUnauthorized: false.
