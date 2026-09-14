@@ -9,7 +9,15 @@ if (env.databaseUrl) {
   // Ces fournisseurs exigent SSL et n'exposent pas toujours un certificat vérifiable
   // depuis l'environnement de la fonction serverless, d'où rejectUnauthorized: false.
   // SSL désactivé automatiquement pour un Postgres local (docker) utilisé en dev/tests.
-  const host = new URL(env.databaseUrl).hostname;
+  let host;
+  try {
+    host = new URL(env.databaseUrl).hostname;
+  } catch (err) {
+    throw new Error(
+      `DATABASE_URL invalide (${err.message}). Vérifiez qu'aucun guillemet n'a été collé ` +
+      "autour de la valeur dans les Environment Variables Vercel."
+    );
+  }
   const isLocalHost = host === 'localhost' || host === '127.0.0.1';
   const useSsl = process.env.DATABASE_SSL
     ? process.env.DATABASE_SSL !== 'false'

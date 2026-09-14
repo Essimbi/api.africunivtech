@@ -1,12 +1,27 @@
 require('dotenv').config();
 
+// Nettoie une valeur d'environnement collée avec des guillemets englobants
+// (ex. copier-coller de DATABASE_URL="postgres://..." tel quel dans le dashboard
+// Vercel) — erreur courante qui ferait planter `new URL(...)` au démarrage.
+function unquote(value) {
+  if (!value) return value;
+  const trimmed = value.trim();
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1);
+  }
+  return trimmed;
+}
+
 module.exports = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: parseInt(process.env.PORT, 10) || 4000,
   databasePath: process.env.DATABASE_PATH || './database.sqlite',
   // Présent en production (Vercel Postgres / Neon / toute base Postgres) : bascule
   // automatiquement le dialecte Sequelize, voir src/config/database.js.
-  databaseUrl: process.env.DATABASE_URL || process.env.POSTGRES_URL || null,
+  databaseUrl: unquote(process.env.DATABASE_URL || process.env.POSTGRES_URL) || null,
   jwt: {
     accessSecret: process.env.JWT_ACCESS_SECRET || 'dev_access_secret',
     refreshSecret: process.env.JWT_REFRESH_SECRET || 'dev_refresh_secret',
